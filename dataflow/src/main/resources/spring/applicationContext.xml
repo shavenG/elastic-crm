@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:reg="http://www.dangdang.com/schema/ddframe/reg" xmlns:job="http://www.dangdang.com/schema/ddframe/job"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context.xsd
+                        http://www.dangdang.com/schema/ddframe/reg
+                        http://www.dangdang.com/schema/ddframe/reg/reg.xsd
+                        http://www.dangdang.com/schema/ddframe/job
+                        http://www.dangdang.com/schema/ddframe/job/job.xsd
+                        ">
+	<context:component-scan base-package="com.al.crm.elastic.job" />
+	
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="oracle.jdbc.driver.OracleDriver"></property>
+		<property name="jdbcUrl"
+			value="jdbc:oracle:thin:@127.0.0.1:1522/taf"></property>
+		<property name="user" value="test"></property>
+		<property name="password" value="test"></property>
+		<property name="acquireIncrement" value="1"></property>
+		<property name="maxIdleTime" value="300"></property>
+		<property name="initialPoolSize" value="1"></property>
+		<property name="maxPoolSize" value="10"></property>
+		<property name="maxStatements" value="0"></property>
+		<property name="maxStatementsPerConnection" value="20"></property>
+	</bean>
+	
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<reg:zookeeper id="regCenter" server-lists="127.0.0.1:2181"
+		digest="ctc" namespace="ctc" base-sleep-time-milliseconds="1000"
+		max-sleep-time-milliseconds="3000" max-retries="3" />
+
+	<!-- 配置作业-->
+	<job:dataflow id="dataflow-xiewen-test" class="com.al.crm.elastic.dataflow.MyDataflow"
+		registry-center-ref="regCenter" cron="0 0/2 * * * ?"
+		sharding-total-count="10" sharding-item-parameters="0=0,1=1,2=2,3=3,4=4,5=5,6=6,7=7,8=8,9=9"
+		streaming-process="true" overwrite="true"/>
+</beans>
